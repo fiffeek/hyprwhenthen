@@ -1,0 +1,10 @@
+[general]
+timeout = "15s"
+
+# this handler makes the Google log-in window float;
+# since hypr window rules are not applied when the window title
+# changes, it is impossible to configure it in hypr directly
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Logowanie – Konta Google — Mozilla Firefox"
+then = "~/personal/hyprwhenthen/examples/minimal/scripts/float.sh $REGEX_GROUP_1"
