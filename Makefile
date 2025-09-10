@@ -9,6 +9,7 @@ NPM_BIN := npm
 GOLANGCI_LINT_BIN := golangci-lint
 GOLANG_BIN := go
 GORELEASER_BIN := goreleaser
+TEST_EXECUTABLE_NAME := ./dist/hwttest
 
 dev: \
 	$(INSTALL_DIR)/.dir.stamp \
@@ -52,3 +53,10 @@ fmt:
 
 lint:
 	@$(GOLANGCI_LINT_BIN) run
+
+build/test:
+	@mkdir -p ./dist/
+	@$(GOLANG_BIN) build -v -o $(TEST_EXECUTABLE_NAME) main.go
+
+test/integration: build/test
+	@HWT_BINARY_PATH=$(TEST_EXECUTABLE_NAME) $(GOLANG_BIN) test -v ./test/... --debug
