@@ -75,9 +75,9 @@ func (i *IPC) RunEventLoop(ctx context.Context) error {
 
 			line := scanner.Text()
 			cfg := i.cfg.Get()
-			found, event := ParseEvent(cfg, line)
+			found, event := getRegisteredEvent(cfg, line)
 			if !found {
-				logrus.Debugf("Event not found in line %s (might not be registered and it is skipped)", line)
+				logrus.WithFields(logrus.Fields{"line": line}).Debug("Event not registered")
 				continue
 			}
 

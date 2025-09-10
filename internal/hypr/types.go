@@ -10,7 +10,7 @@ type Event struct {
 	EventContext string
 }
 
-func ParseEvent(cfg *config.RawConfig, line string) (bool, *Event) {
+func getRegisteredEvent(cfg *config.RawConfig, line string) (bool, *Event) {
 	for _, key := range cfg.EventKeys {
 		after, done := strings.CutPrefix(line, key+">>")
 		if done {

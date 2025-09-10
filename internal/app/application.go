@@ -21,8 +21,8 @@ type Application struct {
 	startOnce      sync.Once
 }
 
-func NewApplication(ctx context.Context, configPath *string, workersNum int, queueSize int) (*Application, error) {
-	cfg, err := config.NewConfig(*configPath)
+func NewApplication(ctx context.Context, configPath string, workersNum int, queueSize int) (*Application, error) {
+	cfg, err := config.NewConfig(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cant load config: %w", err)
 	}
