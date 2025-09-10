@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"hyprwhenthen/internal/app"
 
 	"github.com/sirupsen/logrus"
@@ -13,10 +13,12 @@ var (
 	workers   int
 	queueSize int
 	runCmd    = &cobra.Command{
-		Use:   "run",
-		Short: "Start the HyprWhenThen service",
-		Long:  "Start the HyprWhenThen service to listen for Hyprland events and execute configured actions.",
-		Run:   run,
+		Use:           "run",
+		Short:         "Start the HyprWhenThen service",
+		Long:          "Start the HyprWhenThen service to listen for Hyprland events and execute configured actions.",
+		SilenceErrors: true,
+		SilenceUsage:  true,
+		RunE:          run,
 	}
 )
 
@@ -36,23 +38,18 @@ func init() {
 	)
 }
 
-func run(cmd *cobra.Command, args []string) {
+func run(cmd *cobra.Command, args []string) error {
 	logrus.WithField("version", Version).Info("Starting HyprWhenThen")
 
 	ctx, cancel := context.WithCancelCause(context.Background())
 	defer cancel(context.Canceled)
 
-	app, err := app.NewApplication(ctx, configPath, workers, queueSize)
+	app, err := app.NewApplication(ctx, cancel, configPath, workers, queueSize)
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed on app creation")
+		return fmt.Errorf("failed on app creation: %w", err)
 	}
-	err = app.Run(ctx)
-	if errors.Is(err, context.Canceled) {
-		logrus.WithError(err).Info("Context cancelled, exiting")
-		return
+	if err := app.Run(ctx); err != nil {
+		return fmt.Errorf("run failed: %w", err)
 	}
-	if err != nil {
-		logrus.WithError(err).Fatal("Service failed")
-	}
-	logrus.Info("Exiting...")
+	return nil
 }

@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"hyprwhenthen/internal/signal"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -30,9 +33,19 @@ var (
 
 func Execute() {
 	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+	var target *signal.Interrupted
+	if errors.As(err, &target) {
+		logrus.WithError(err).Info("Service interrupted")
+		os.Exit(target.ExitCode())
 	}
+	if errors.Is(err, context.Canceled) {
+		logrus.WithError(err).Info("Context cancelled, exiting")
+		return
+	}
+	if err != nil {
+		logrus.WithError(err).Fatal("Service failed")
+	}
+	logrus.Debug("Exiting...")
 }
 
 func setupLogger(cmd *cobra.Command, args []string) {

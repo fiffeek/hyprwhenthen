@@ -16,13 +16,13 @@ import (
 )
 
 type Service struct {
-	ipc       *hypr.IPC
+	ipc       *hypr.Service
 	pool      *workerpool.Service
 	cfg       *config.Config
 	startOnce sync.Once
 }
 
-func NewService(ipc *hypr.IPC, pool *workerpool.Service, cfg *config.Config) (*Service, error) {
+func NewService(ipc *hypr.Service, pool *workerpool.Service, cfg *config.Config) (*Service, error) {
 	return &Service{
 		ipc:  ipc,
 		pool: pool,

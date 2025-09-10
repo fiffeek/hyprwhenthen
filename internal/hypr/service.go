@@ -14,14 +14,14 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type IPC struct {
+type Service struct {
 	instanceSignature string
 	xdgRuntimeDir     string
 	events            chan *Event
 	cfg               *config.Config
 }
 
-func NewIPC(ctx context.Context, cfg *config.Config) (*IPC, error) {
+func NewService(ctx context.Context, cfg *config.Config) (*Service, error) {
 	signature := os.Getenv("HYPRLAND_INSTANCE_SIGNATURE")
 	if signature == "" {
 		return nil, errors.New("HYPRLAND_INSTANCE_SIGNATURE environment variable not set - are you running under Hyprland?")
@@ -32,7 +32,7 @@ func NewIPC(ctx context.Context, cfg *config.Config) (*IPC, error) {
 		return nil, fmt.Errorf("cant get xdg runtime dir: %w", err)
 	}
 
-	return &IPC{
+	return &Service{
 		instanceSignature: signature,
 		xdgRuntimeDir:     xdgRuntimeDir,
 		events:            make(chan *Event, 100),
@@ -40,11 +40,11 @@ func NewIPC(ctx context.Context, cfg *config.Config) (*IPC, error) {
 	}, nil
 }
 
-func (i *IPC) Listen() <-chan *Event {
+func (i *Service) Listen() <-chan *Event {
 	return i.events
 }
 
-func (i *IPC) RunEventLoop(ctx context.Context) error {
+func (i *Service) Run(ctx context.Context) error {
 	socketPath := GetHyprEventsSocket(i.xdgRuntimeDir, i.instanceSignature)
 	eg, ctx := errgroup.WithContext(ctx)
 

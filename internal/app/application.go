@@ -6,6 +6,7 @@ import (
 	"hyprwhenthen/internal/config"
 	"hyprwhenthen/internal/eventprocessor"
 	"hyprwhenthen/internal/hypr"
+	"hyprwhenthen/internal/signal"
 	"hyprwhenthen/internal/workerpool"
 	"sync"
 
@@ -15,19 +16,20 @@ import (
 
 type Application struct {
 	cfg            *config.Config
-	hypr           *hypr.IPC
+	hypr           *hypr.Service
 	pool           *workerpool.Service
 	eventProcessor *eventprocessor.Service
 	startOnce      sync.Once
+	signalHandler  *signal.Handler
 }
 
-func NewApplication(ctx context.Context, configPath string, workersNum int, queueSize int) (*Application, error) {
+func NewApplication(ctx context.Context, cancelCause context.CancelCauseFunc, configPath string, workersNum int, queueSize int) (*Application, error) {
 	cfg, err := config.NewConfig(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cant load config: %w", err)
 	}
 
-	hypr, err := hypr.NewIPC(ctx, cfg)
+	hypr, err := hypr.NewService(ctx, cfg)
 	if err != nil {
 		return nil, fmt.Errorf("cant init hypr: %w", err)
 	}
@@ -42,11 +44,14 @@ func NewApplication(ctx context.Context, configPath string, workersNum int, queu
 		return nil, fmt.Errorf("cant init event processor: %w", err)
 	}
 
+	handler := signal.NewHandler(cancelCause)
+
 	return &Application{
 		cfg:            cfg,
 		hypr:           hypr,
 		pool:           pool,
 		eventProcessor: processor,
+		signalHandler:  handler,
 	}, nil
 }
 
@@ -65,9 +70,10 @@ func (a *Application) run(ctx context.Context) error {
 		Fun  func(context.Context) error
 		Name string
 	}{
-		{Fun: a.hypr.RunEventLoop, Name: "hypr ipc"},
-		{Fun: a.pool.Run, Name: "power detector dbus"},
-		{Fun: a.eventProcessor.Run, Name: "reloader"},
+		{Fun: a.hypr.Run, Name: "hypr"},
+		{Fun: a.pool.Run, Name: "bg worker pool"},
+		{Fun: a.eventProcessor.Run, Name: "event processor"},
+		{Fun: a.signalHandler.Run, Name: "signal handler"},
 	}
 	for _, bg := range backgroundGoroutines {
 		eg.Go(func() error {
