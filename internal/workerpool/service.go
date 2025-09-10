@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hyprwhenthen/internal/config"
+	"github.com/fiffeek/hyprwhenthen/internal/config"
 	"os"
 	"os/exec"
 	"sync"

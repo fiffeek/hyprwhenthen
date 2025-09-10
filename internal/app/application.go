@@ -3,12 +3,14 @@ package app
 import (
 	"context"
 	"fmt"
-	"hyprwhenthen/internal/config"
-	"hyprwhenthen/internal/eventprocessor"
-	"hyprwhenthen/internal/hypr"
-	"hyprwhenthen/internal/signal"
-	"hyprwhenthen/internal/workerpool"
 	"sync"
+
+	"github.com/fiffeek/hyprwhenthen/internal/config"
+	"github.com/fiffeek/hyprwhenthen/internal/eventprocessor"
+	"github.com/fiffeek/hyprwhenthen/internal/filewatcher"
+	"github.com/fiffeek/hyprwhenthen/internal/hypr"
+	"github.com/fiffeek/hyprwhenthen/internal/signal"
+	"github.com/fiffeek/hyprwhenthen/internal/workerpool"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -21,6 +23,7 @@ type Application struct {
 	eventProcessor *eventprocessor.Service
 	startOnce      sync.Once
 	signalHandler  *signal.Handler
+	watcher        *filewatcher.Service
 }
 
 func NewApplication(ctx context.Context, cancelCause context.CancelCauseFunc, configPath string, workersNum int, queueSize int) (*Application, error) {
@@ -28,6 +31,8 @@ func NewApplication(ctx context.Context, cancelCause context.CancelCauseFunc, co
 	if err != nil {
 		return nil, fmt.Errorf("cant load config: %w", err)
 	}
+
+	watcher := filewatcher.NewService(cfg, cfg)
 
 	hypr, err := hypr.NewService(ctx, cfg)
 	if err != nil {
@@ -52,6 +57,7 @@ func NewApplication(ctx context.Context, cancelCause context.CancelCauseFunc, co
 		pool:           pool,
 		eventProcessor: processor,
 		signalHandler:  handler,
+		watcher:        watcher,
 	}, nil
 }
 
@@ -74,6 +80,7 @@ func (a *Application) run(ctx context.Context) error {
 		{Fun: a.pool.Run, Name: "bg worker pool"},
 		{Fun: a.eventProcessor.Run, Name: "event processor"},
 		{Fun: a.signalHandler.Run, Name: "signal handler"},
+		{Fun: a.watcher.Run, Name: "watch config changes"},
 	}
 	for _, bg := range backgroundGoroutines {
 		eg.Go(func() error {

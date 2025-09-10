@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hyprwhenthen/internal/signal"
+	"github.com/fiffeek/hyprwhenthen/internal/signal"
 	"os"
 	"path/filepath"
 	"runtime"

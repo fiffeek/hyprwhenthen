@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/fiffeek/hyprwhenthen/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,6 +39,10 @@ func (c *Config) Get() *RawConfig {
 	return c.cfg
 }
 
+func (c *Config) OnEvent(context.Context) error {
+	return c.Reload()
+}
+
 func (c *Config) Reload() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -49,6 +55,7 @@ func (c *Config) Reload() error {
 }
 
 type RawConfig struct {
+	Dir       string              `toml:",skip"`
 	Events    []*Event            `toml:"handler"`
 	OnEvents  map[string][]*Event `toml:",skip"`
 	EventKeys []string            `toml:",skip"`
@@ -56,7 +63,8 @@ type RawConfig struct {
 }
 
 type GeneralSection struct {
-	Timeout *time.Duration `toml:"timeout"`
+	Timeout                *time.Duration `toml:"timeout"`
+	HotReloadDebounceTimer *time.Duration `toml:"hot_reload_debounce_timer"`
 }
 
 type Event struct {
@@ -96,6 +104,8 @@ func Load(configPath string) (*RawConfig, error) {
 	if err := config.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid configuration: %w", err)
 	}
+
+	config.Dir = filepath.Dir(absConfig)
 
 	logrus.Debug("Config is valid")
 
@@ -140,6 +150,9 @@ func (r *GeneralSection) Validate() error {
 	}
 	if r.Timeout != nil && *r.Timeout <= 0 {
 		return errors.New("timeout must be positive")
+	}
+	if r.HotReloadDebounceTimer == nil {
+		r.HotReloadDebounceTimer = utils.JustPtr(time.Second)
 	}
 	return nil
 }

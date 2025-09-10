@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"hyprwhenthen/internal/config"
+	"github.com/fiffeek/hyprwhenthen/internal/config"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

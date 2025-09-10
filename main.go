@@ -1,6 +1,6 @@
 package main
 
-import "hyprwhenthen/cmd"
+import "github.com/fiffeek/hyprwhenthen/cmd"
 
 func main() {
 	cmd.Execute()

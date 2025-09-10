@@ -1,8 +1,9 @@
 package hypr
 
 import (
-	"hyprwhenthen/internal/config"
 	"strings"
+
+	"github.com/fiffeek/hyprwhenthen/internal/config"
 )
 
 type Event struct {

@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"hyprwhenthen/internal/app"
+	"github.com/fiffeek/hyprwhenthen/internal/app"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

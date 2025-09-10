@@ -5,9 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hyprwhenthen/internal/config"
-	"hyprwhenthen/internal/dial"
-	"hyprwhenthen/internal/utils"
+	"github.com/fiffeek/hyprwhenthen/internal/config"
+	"github.com/fiffeek/hyprwhenthen/internal/dial"
+	"github.com/fiffeek/hyprwhenthen/internal/utils"
 	"os"
 
 	"github.com/sirupsen/logrus"
