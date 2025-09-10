@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+
 	"github.com/fiffeek/hyprwhenthen/internal/app"
 
 	"github.com/sirupsen/logrus"

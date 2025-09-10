@@ -1,13 +1,15 @@
+// Package cmd provides the entrypoints to the service.
 package cmd
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/fiffeek/hyprwhenthen/internal/signal"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/fiffeek/hyprwhenthen/internal/signal"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

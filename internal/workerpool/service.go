@@ -1,13 +1,15 @@
+// Package workerpool provides a service that executes jobs in background.
 package workerpool
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/fiffeek/hyprwhenthen/internal/config"
 	"os"
 	"os/exec"
 	"sync"
+
+	"github.com/fiffeek/hyprwhenthen/internal/config"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -23,7 +25,7 @@ type Service struct {
 	closeOnce sync.Once
 }
 
-func NewService(workersNum int, queueSize int, cfg *config.Config) (*Service, error) {
+func NewService(workersNum, queueSize int, cfg *config.Config) (*Service, error) {
 	if workersNum <= 0 {
 		return nil, errors.New("workersNum has to be > 0")
 	}
@@ -110,6 +112,7 @@ func (s *Service) executeJob(ctx context.Context, job *Job) error {
 
 	jobCtx, cancel := context.WithTimeout(ctx, *timeout)
 	defer cancel()
+	// nolint: gosec
 	cmd := exec.CommandContext(jobCtx, "bash", "-c", job.Exec)
 	env := append([]string{}, os.Environ()...)
 	for key, value := range job.extraEnv {

@@ -7,8 +7,9 @@ import (
 )
 
 type Event struct {
-	EventType    string
-	EventContext string
+	EventType         string
+	EventContext      string
+	EventContextBytes []byte
 }
 
 func getRegisteredEvent(cfg *config.RawConfig, line string) (bool, *Event) {
@@ -16,8 +17,9 @@ func getRegisteredEvent(cfg *config.RawConfig, line string) (bool, *Event) {
 		after, done := strings.CutPrefix(line, key+">>")
 		if done {
 			return true, &Event{
-				EventType:    key,
-				EventContext: after,
+				EventType:         key,
+				EventContext:      after,
+				EventContextBytes: []byte(after),
 			}
 		}
 	}

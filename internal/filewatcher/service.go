@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/fiffeek/hyprwhenthen/internal/config"
 	"github.com/fiffeek/hyprwhenthen/internal/utils"
@@ -93,7 +92,7 @@ func (s *Service) runServiceLoop(ctx context.Context, watcher *fsnotify.Watcher)
 				"operation": event.Op,
 			}).Debug("Received filewatcher event")
 
-			s.debouncer.Do(ctx, time.Duration(*s.cfg.Get().General.HotReloadDebounceTimer), s.callback.OnEvent)
+			s.debouncer.Do(ctx, *s.cfg.Get().General.HotReloadDebounceTimer, s.callback.OnEvent)
 			logrus.WithFields(logrus.Fields{"fun": s.callback.OnEvent}).Debug("Scheduled debounced update")
 		case err, ok := <-watcher.Errors:
 			if !ok {

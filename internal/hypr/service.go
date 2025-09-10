@@ -1,3 +1,4 @@
+// Package hypr provides a service for communicating with hypr events socket.
 package hypr
 
 import (
@@ -5,10 +6,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/fiffeek/hyprwhenthen/internal/config"
 	"github.com/fiffeek/hyprwhenthen/internal/dial"
 	"github.com/fiffeek/hyprwhenthen/internal/utils"
-	"os"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"

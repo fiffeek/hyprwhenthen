@@ -1,3 +1,5 @@
+// Package app provides utility for application infrastructure provisioning and
+// dependency injection.
 package app
 
 import (
@@ -26,7 +28,7 @@ type Application struct {
 	watcher        *filewatcher.Service
 }
 
-func NewApplication(ctx context.Context, cancelCause context.CancelCauseFunc, configPath string, workersNum int, queueSize int) (*Application, error) {
+func NewApplication(ctx context.Context, cancelCause context.CancelCauseFunc, configPath string, workersNum, queueSize int) (*Application, error) {
 	cfg, err := config.NewConfig(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("cant load config: %w", err)

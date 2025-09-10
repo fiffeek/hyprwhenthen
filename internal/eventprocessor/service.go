@@ -1,15 +1,18 @@
+// Package eventprocessor provides a service that reacts and executes (in background)
+// user defined callbacks on hypr events.
 package eventprocessor
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/fiffeek/hyprwhenthen/internal/config"
-	"github.com/fiffeek/hyprwhenthen/internal/hypr"
-	"github.com/fiffeek/hyprwhenthen/internal/workerpool"
 	"regexp"
 	"strconv"
 	"sync"
+
+	"github.com/fiffeek/hyprwhenthen/internal/config"
+	"github.com/fiffeek/hyprwhenthen/internal/hypr"
+	"github.com/fiffeek/hyprwhenthen/internal/workerpool"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -51,7 +54,9 @@ func (s *Service) run(ctx context.Context) error {
 				if !ok {
 					return errors.New("results channel closed")
 				}
-				logrus.WithError(result.Err).WithFields(logrus.Fields{"id": result.JobID, "exec": result.Exec}).Info("Worker result collected")
+				logrus.WithError(result.Err).WithFields(logrus.Fields{
+					"id": result.JobID, "exec": result.Exec,
+				}).Info("Worker result collected")
 
 			case <-ctx.Done():
 				logrus.Debug("Event processor context cancelled, shutting down")
@@ -67,7 +72,10 @@ func (s *Service) run(ctx context.Context) error {
 				if !ok {
 					return errors.New("hypr events channel closed")
 				}
-				logrus.WithFields(logrus.Fields{"type": event.EventType, "context": event.EventContext}).Debug("Hypr event received")
+				logrus.WithFields(logrus.Fields{
+					"type":    event.EventType,
+					"context": event.EventContext,
+				}).Debug("Hypr event received")
 				if err := s.process(ctx, event); err != nil {
 					return fmt.Errorf("dispatch unsuccessful: %w", err)
 				}
@@ -99,8 +107,11 @@ func (s *Service) process(ctx context.Context, event *hypr.Event) error {
 			return fmt.Errorf("cant compile regexp %s: %w", matcher.When, err)
 		}
 
-		if !reg.Match([]byte(event.EventContext)) {
-			logrus.WithFields(logrus.Fields{"event": event.EventContext, "regex": matcher.When}).Debug("Event does not match regex, skipping...")
+		if !reg.Match(event.EventContextBytes) {
+			logrus.WithFields(logrus.Fields{
+				"event": event.EventContext,
+				"regex": matcher.When,
+			}).Debug("Event does not match regex, skipping...")
 			continue
 		}
 
