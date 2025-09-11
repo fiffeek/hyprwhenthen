@@ -1,0 +1,6 @@
+[general]
+timeout = "15s"
+
+[[handler]]
+when = "placeholder"
+then = "placeholder"

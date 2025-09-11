@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/fiffeek/hyprwhenthen/internal/signal"
 
@@ -60,6 +61,7 @@ func setupLogger(cmd *cobra.Command, args []string) {
 	logrus.SetFormatter(&logrus.TextFormatter{
 		DisableTimestamp: false,
 		DisableColors:    false,
+		TimestampFormat:  time.RFC3339Nano,
 		FullTimestamp:    true,
 		ForceQuote:       true,
 		CallerPrettyfier: func(f *runtime.Frame) (string, string) {

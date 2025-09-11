@@ -85,7 +85,7 @@ func (i *Service) Run(ctx context.Context) error {
 
 			select {
 			case i.events <- event:
-				logrus.Debug("Monitors event sent")
+				logrus.Debug("Hypr event sent")
 			case <-ctx.Done():
 				logrus.Debug("Hypr IPC context cancelled during event send")
 				return context.Cause(ctx)

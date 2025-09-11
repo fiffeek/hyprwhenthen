@@ -115,7 +115,7 @@ func Load(configPath string) (*RawConfig, error) {
 
 func (r *RawConfig) Validate() error {
 	if len(r.Events) == 0 {
-		return errors.New("at least one event must be configured")
+		return errors.New("at least one event handler must be configured")
 	}
 
 	for i, event := range r.Events {

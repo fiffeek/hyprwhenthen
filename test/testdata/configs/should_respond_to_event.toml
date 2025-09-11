@@ -1,0 +1,7 @@
+[general]
+timeout = "1s"
+
+[[handler]]
+on = "windowtitlev2"
+when = ".*"
+then = "touch $TMP_TST_FILE_0"

@@ -118,7 +118,9 @@ func (s *Service) process(ctx context.Context, event *hypr.Event) error {
 		env := map[string]string{}
 		matches := reg.FindStringSubmatch(event.EventContext)
 		for i, match := range matches {
-			env["REGEX_GROUP_"+strconv.Itoa(i)] = match
+			key := "REGEX_GROUP_" + strconv.Itoa(i)
+			env[key] = match
+			logrus.WithFields(logrus.Fields{"key": key, "value": match}).Debug("Set env var for job")
 		}
 
 		job := workerpool.NewJob(env, matcher.Then, matcher.Timeout)

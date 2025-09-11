@@ -1,0 +1,12 @@
+[general]
+timeout = "1s"
+
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Mozilla Firefox"
+then = "touch $TMP_TST_FILE_0 && echo $REGEX_GROUP_0 >> $TMP_TST_FILE_0 && echo $REGEX_GROUP_1 >> $TMP_TST_FILE_0"
+
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Google Chrome"
+then = "touch $TMP_TST_FILE_1 && echo $REGEX_GROUP_0 >> $TMP_TST_FILE_1 && echo $REGEX_GROUP_1 >> $TMP_TST_FILE_1"

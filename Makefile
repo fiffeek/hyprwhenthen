@@ -60,3 +60,6 @@ build/test:
 
 test/integration: build/test
 	@HWT_BINARY_PATH=$(TEST_EXECUTABLE_NAME) $(GOLANG_BIN) test -v ./test/... --debug
+
+test/integration/regenerate: build/test
+	@HWT_BINARY_PATH=$(TEST_EXECUTABLE_NAME) $(GOLANG_BIN) test -v ./test/... --regenerate
