@@ -314,6 +314,30 @@ func Test__Run_Binary(t *testing.T) {
 				waitTillHolds(ctx, t, funcs, 400*time.Millisecond)
 			},
 		},
+		{
+			name:        "should handle crash recovery",
+			config:      "testdata/configs/should_handle_crash_recovery.toml",
+			extraArgs:   []string{"run", "--workers", "1"},
+			expectError: true,
+			hyprEvents: []string{
+				"windowtitlev2>>558f74f82570,Crash",
+				"windowtitlev2>>558f74f82570,Regular",
+			},
+			validateSideEffects: func(t *testing.T, env map[string]string) {
+				testutils.AssertFileExists(t, env["TMP_TST_FILE_0"])
+				compareWithFixture(t, env["TMP_TST_FILE_0"],
+					"testdata/fixtures/should_handle_crash_recovery")
+			},
+			waitForSideEffects: func(ctx context.Context, t *testing.T, env map[string]string) {
+				funcs := []func() error{
+					func() error {
+						return testutils.ContentSameAsFixture(t, env["TMP_TST_FILE_0"],
+							"testdata/fixtures/should_handle_crash_recovery")
+					},
+				}
+				waitTillHolds(ctx, t, funcs, 400*time.Millisecond)
+			},
+		},
 	}
 
 	for _, tt := range tests {
