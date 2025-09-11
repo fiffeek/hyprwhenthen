@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sync"
 	"time"
 
@@ -170,6 +171,9 @@ func (r *Event) Validate() error {
 	}
 	if r.Timeout != nil && *r.Timeout <= 0 {
 		return errors.New("timeout must be positive")
+	}
+	if _, err := regexp.Compile(r.When); err != nil {
+		return fmt.Errorf("regexp expression is invalid: %w", err)
 	}
 	return nil
 }

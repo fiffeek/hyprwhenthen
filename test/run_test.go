@@ -72,6 +72,13 @@ func Test__Run_Binary(t *testing.T) {
 			expectErrorContains: "'on' field is required",
 		},
 		{
+			name:                "should fail invalid regex",
+			config:              "testdata/configs/should_fail_invalid_regex.toml",
+			extraArgs:           []string{"validate"},
+			expectError:         true,
+			expectErrorContains: "regexp expression is invalid",
+		},
+		{
 			name:                "should fail when handler 'when' field is missing",
 			config:              "testdata/configs/should_fail_missing_when_field.toml",
 			extraArgs:           []string{"validate"},
