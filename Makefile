@@ -10,6 +10,31 @@ GOLANGCI_LINT_BIN := golangci-lint
 GOLANG_BIN := go
 GORELEASER_BIN := goreleaser
 TEST_EXECUTABLE_NAME := ./dist/hwttest
+DESTDIR ?= $(HOME)/.local/bin
+EXECUTABLE_NAME := hyprwhenthen
+
+release/local: \
+	$(INSTALL_DIR)/.dir.stamp \
+	$(INSTALL_DIR)/.asdf.stamp
+	@$(GORELEASER_BIN) release --snapshot --clean
+
+install:
+	@mkdir -p "$(DESTDIR)"
+	@if [ "$$(uname -m)" = "x86_64" ]; then \
+		cp dist/hyprwhenthen/$(EXECUTABLE_NAME) "$(DESTDIR)/"; \
+	elif [ "$$(uname -m)" = "aarch64" ]; then \
+		cp dist/hyprwhenthen_linux_arm64_v8.0/$(EXECUTABLE_NAME) "$(DESTDIR)/"; \
+	elif [ "$$(uname -m)" = "i686" ] || [ "$$(uname -m)" = "i386" ]; then \
+		cp dist/hyprwhenthen_linux_386_sse2/$(EXECUTABLE_NAME) "$(DESTDIR)/"; \
+	else \
+		echo "Unsupported architecture: $$(uname -m)"; \
+		exit 1; \
+	fi
+	@echo "Installed $(EXECUTABLE_NAME) to $(DESTDIR)"
+
+uninstall:
+	@rm "$(DESTDIR)/$(EXECUTABLE_NAME)"
+	@echo "Uninstalled $(EXECUTABLE_NAME) from $(DESTDIR)"
 
 dev: \
 	$(INSTALL_DIR)/.dir.stamp \
@@ -53,6 +78,8 @@ fmt:
 
 lint:
 	@$(GOLANGCI_LINT_BIN) run
+
+pre-push: fmt lint test/integration
 
 build/test:
 	@mkdir -p ./dist/

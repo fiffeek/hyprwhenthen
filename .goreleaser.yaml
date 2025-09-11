@@ -1,0 +1,72 @@
+---
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+builds:
+    - env:
+          - CGO_ENABLED=0
+      goos:
+          - linux
+      main: ./main.go
+      ldflags: -s -w -X main.Version={{ .Version }} -X main.Commit={{ .ShortCommit }} -X main.BuildDate={{ .Date }}
+      binary: hyprwhenthen
+
+archives:
+    - formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+      name_template: >-
+          {{ .ProjectName }}_
+          {{- title .Os }}_
+          {{- if eq .Arch "amd64" }}x86_64
+          {{- else if eq .Arch "386" }}i386
+          {{- else }}{{ .Arch }}{{ end }}
+          {{- if .Arm }}v{{ .Arm }}{{ end }}
+      files:
+          - LICENSE
+
+changelog:
+    sort: asc
+    filters:
+        exclude:
+            - '(?i)^docs?:'
+            - '(?i)^docs\([^:]+\):'
+            - '(?i)^docs\[[^:]+\]:'
+            - '^tests?:'
+            - '(?i)^dev:'
+            - '(?i)^chore:'
+            - '(?i)^style:'
+            - '(?i)^refactor:'
+            - '^build\(deps\): bump .* in /docs \(#\d+\)'
+            - '^build\(deps\): bump .* in /\.github/peril \(#\d+\)'
+            - Merge pull request
+            - Merge branch
+release:
+    skip_upload: false
+    github:
+        owner: fiffeek
+        name: hyprwhenthen
+
+aurs:
+    - description: Dynamic monitor configuration for Hyprland.
+      skip_upload: false
+      homepage: https://github.com/fiffeek/hyprwhenthen
+      provides:
+          - hyprwhenthen-bin
+      maintainers:
+          - Filip Mikina <filipmikina at gmail dot com>
+      license: MIT
+      private_key: '{{ .Env.AUR_KEY }}'
+      git_url: ssh://aur@aur.archlinux.org/hyprwhenthen-bin.git
+      optdepends:
+          - hyprland
+      commit_author:
+          name: Filip Mikina
+          email: filipmikina@gmail.con
+      package: |-
+          # bin
+          install -Dm755 "./hyprwhenthen" "${pkgdir}/usr/bin/hyprwhenthen"
+
+          # license
+          install -Dm644 "./LICENSE" "${pkgdir}/usr/share/licenses/hyprwhenthen/LICENSE"
