@@ -399,7 +399,8 @@ func Test__Run_Binary(t *testing.T) {
 					assert.NoError(t, binaryErr, "expected to exit cleanly")
 				}
 				for _, expected := range tt.expectLogsContain {
-					assert.Contains(t, string(out), expected, "combined logs should contain a substring")
+					assert.Contains(t, string(out), expected,
+						"combined logs should contain a substring")
 				}
 				if tt.validateSideEffects != nil {
 					tt.validateSideEffects(t, extraEnv)

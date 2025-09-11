@@ -124,7 +124,10 @@ func (s *Service) process(ctx context.Context, event *hypr.Event) error {
 		}
 
 		job := workerpool.NewJob(env, matcher.Then, matcher.Timeout, matcher.RoutingKey)
-		logrus.WithFields(logrus.Fields{"id": job.ID, "exec": job.Exec, "routing_key": job.RoutingKey}).Info("Submitting execution to the pool")
+		logrus.WithFields(logrus.Fields{
+			"id": job.ID, "exec": job.Exec,
+			"routing_key": job.RoutingKey,
+		}).Info("Submitting execution to the pool")
 		if err := s.pool.Submit(ctx, job); err != nil {
 			return fmt.Errorf("cant submit a job for execution: %w", err)
 		}
