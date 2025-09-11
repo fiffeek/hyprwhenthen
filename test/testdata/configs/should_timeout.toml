@@ -1,0 +1,12 @@
+[general]
+timeout = "150ms"
+
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Timeout"
+then = "sleep 0.2 && touch $TMP_TST_FILE_0 && echo $REGEX_GROUP_0 >> $TMP_TST_FILE_0"
+
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Regular"
+then = "touch $TMP_TST_FILE_0 && echo $REGEX_GROUP_0 >> $TMP_TST_FILE_0"

@@ -235,6 +235,55 @@ func Test__Run_Binary(t *testing.T) {
 				"routing_key=\"558f74f82570\"",
 			},
 		},
+
+		{
+			name:        "should process serially",
+			config:      "testdata/configs/should_process_serially.toml",
+			extraArgs:   []string{"run", "--workers", "1"},
+			expectError: true,
+			hyprEvents: []string{
+				"windowtitlev2>>558f74f82570,Mozilla Firefox",
+				"windowtitlev2>>558f74f82570,Mozilla Firefox -- Another",
+			},
+			validateSideEffects: func(t *testing.T, env map[string]string) {
+				testutils.AssertFileExists(t, env["TMP_TST_FILE_0"])
+				compareWithFixture(t, env["TMP_TST_FILE_0"],
+					"testdata/fixtures/should_process_serially")
+			},
+			waitForSideEffects: func(ctx context.Context, t *testing.T, env map[string]string) {
+				funcs := []func() error{
+					func() error {
+						return testutils.ContentSameAsFixture(t, env["TMP_TST_FILE_0"],
+							"testdata/fixtures/should_process_serially")
+					},
+				}
+				waitTillHolds(ctx, t, funcs, 400*time.Millisecond)
+			},
+		},
+		{
+			name:        "should timeout",
+			config:      "testdata/configs/should_timeout.toml",
+			extraArgs:   []string{"run", "--workers", "1"},
+			expectError: true,
+			hyprEvents: []string{
+				"windowtitlev2>>558f74f82570,Timeout",
+				"windowtitlev2>>558f74f82570,Regular",
+			},
+			validateSideEffects: func(t *testing.T, env map[string]string) {
+				testutils.AssertFileExists(t, env["TMP_TST_FILE_0"])
+				compareWithFixture(t, env["TMP_TST_FILE_0"],
+					"testdata/fixtures/should_timeout")
+			},
+			waitForSideEffects: func(ctx context.Context, t *testing.T, env map[string]string) {
+				funcs := []func() error{
+					func() error {
+						return testutils.ContentSameAsFixture(t, env["TMP_TST_FILE_0"],
+							"testdata/fixtures/should_timeout")
+					},
+				}
+				waitTillHolds(ctx, t, funcs, 400*time.Millisecond)
+			},
+		},
 		{
 			name:        "should route to multiple handlers",
 			config:      "testdata/configs/should_route_to_multiple_targets.toml",
