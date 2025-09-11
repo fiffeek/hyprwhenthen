@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"os"
 	"os/exec"
 	"sync"
@@ -16,13 +17,13 @@ import (
 )
 
 type Service struct {
-	workers   int
-	jobs      chan *Job
-	cfg       *config.Config
-	results   chan *Result
-	closed    chan struct{}
-	startOnce sync.Once
-	closeOnce sync.Once
+	workers      int
+	workerQueues []chan *Job
+	cfg          *config.Config
+	results      chan *Result
+	closed       chan struct{}
+	startOnce    sync.Once
+	closeOnce    sync.Once
 }
 
 func NewService(workersNum, queueSize int, cfg *config.Config) (*Service, error) {
@@ -32,12 +33,18 @@ func NewService(workersNum, queueSize int, cfg *config.Config) (*Service, error)
 	if queueSize < 0 {
 		return nil, errors.New("queue must be >= 0")
 	}
+
+	workerQueues := make([]chan *Job, workersNum)
+	for i := range workersNum {
+		workerQueues[i] = make(chan *Job, queueSize)
+	}
+
 	return &Service{
-		workers: workersNum,
-		jobs:    make(chan *Job, queueSize),
-		closed:  make(chan struct{}),
-		results: make(chan *Result, queueSize),
-		cfg:     cfg,
+		workers:      workersNum,
+		workerQueues: workerQueues,
+		closed:       make(chan struct{}),
+		results:      make(chan *Result, queueSize*workersNum),
+		cfg:          cfg,
 	}, nil
 }
 
@@ -51,10 +58,19 @@ func (s *Service) Submit(ctx context.Context, job *Job) error {
 		return errors.New("pool is closed")
 	default:
 	}
+
+	logrus.WithFields(logrus.Fields{"id": job.ID, "routing_key": job.RoutingKey}).Debug("Queuing a job")
+	workerIndex, err := s.hashRoutingKey(job.RoutingKey)
+	if err != nil {
+		return fmt.Errorf("cant calculate worker index: %w", err)
+	}
+	workerIndex %= len(s.workerQueues)
+	logrus.WithFields(logrus.Fields{"id": job.ID, "worker": workerIndex}).Debug("Assigned the job to a worker")
+
 	select {
 	case <-ctx.Done():
 		return context.Cause(ctx)
-	case s.jobs <- job:
+	case s.workerQueues[workerIndex] <- job:
 		return nil
 	}
 }
@@ -62,7 +78,9 @@ func (s *Service) Submit(ctx context.Context, job *Job) error {
 func (s *Service) Stop() {
 	s.closeOnce.Do(func() {
 		close(s.closed)
-		close(s.jobs)
+		for _, queue := range s.workerQueues {
+			close(queue)
+		}
 	})
 }
 
@@ -71,7 +89,7 @@ func (s *Service) Run(ctx context.Context) error {
 	s.startOnce.Do(func() {
 		eg, ctx := errgroup.WithContext(ctx)
 		for i := 0; i < s.workers; i++ {
-			eg.Go(func() error { return s.runJob(ctx) })
+			eg.Go(func() error { return s.runWorker(ctx, i) })
 		}
 		err = eg.Wait()
 		close(s.results)
@@ -79,18 +97,19 @@ func (s *Service) Run(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) runJob(ctx context.Context) error {
+func (s *Service) runWorker(ctx context.Context, workerID int) error {
 	defer func() {
 		if r := recover(); r != nil {
-			logrus.Errorf("worker panic: %v", r)
+			logrus.Errorf("worker %d panic: %v", workerID, r)
 		}
 	}()
 
+	jobQueue := s.workerQueues[workerID]
 	for {
 		select {
 		case <-ctx.Done():
 			return context.Cause(ctx)
-		case job, ok := <-s.jobs:
+		case job, ok := <-jobQueue:
 			if !ok {
 				return nil
 			}
@@ -130,4 +149,10 @@ func (s *Service) executeJob(ctx context.Context, job *Job) error {
 	}
 
 	return nil
+}
+
+func (s *Service) hashRoutingKey(routingKey string) (int, error) {
+	h := fnv.New32a()
+	_, err := h.Write([]byte(routingKey))
+	return int(h.Sum32()), err
 }

@@ -21,6 +21,7 @@ func Test__Run_Binary(t *testing.T) {
 		extraArgs           []string
 		expectError         bool
 		expectErrorContains string
+		expectLogsContain   []string
 		validateSideEffects func(*testing.T, map[string]string)
 		waitForSideEffects  func(context.Context, *testing.T, map[string]string)
 		hyprEvents          []string
@@ -181,6 +182,89 @@ func Test__Run_Binary(t *testing.T) {
 				waitTillHolds(ctx, t, funcs, 300*time.Millisecond)
 			},
 		},
+		{
+			name:        "should use routing_key",
+			config:      "testdata/configs/should_use_routing_key.toml",
+			extraArgs:   []string{"run"},
+			expectError: true,
+			hyprEvents: []string{
+				"windowtitlev2>>558f74f82570,Mozilla Firefox",
+			},
+			validateSideEffects: func(t *testing.T, env map[string]string) {
+				testutils.AssertFileExists(t, env["TMP_TST_FILE_0"])
+				compareWithFixture(t, env["TMP_TST_FILE_0"],
+					"testdata/fixtures/should_use_routing_key")
+			},
+			waitForSideEffects: func(ctx context.Context, t *testing.T, env map[string]string) {
+				funcs := []func() error{
+					func() error {
+						return testutils.ContentSameAsFixture(t, env["TMP_TST_FILE_0"],
+							"testdata/fixtures/should_use_routing_key")
+					},
+				}
+				waitTillHolds(ctx, t, funcs, 300*time.Millisecond)
+			},
+			expectLogsContain: []string{
+				"routing_key=\"558f74f82570\"",
+			},
+		},
+		{
+			name:        "should process serially on key",
+			config:      "testdata/configs/should_process_serially_on_key.toml",
+			extraArgs:   []string{"run"},
+			expectError: true,
+			hyprEvents: []string{
+				"windowtitlev2>>558f74f82570,Mozilla Firefox",
+				"windowtitlev2>>558f74f82570,Mozilla Firefox -- Another",
+			},
+			validateSideEffects: func(t *testing.T, env map[string]string) {
+				testutils.AssertFileExists(t, env["TMP_TST_FILE_0"])
+				compareWithFixture(t, env["TMP_TST_FILE_0"],
+					"testdata/fixtures/should_process_serially_on_key")
+			},
+			waitForSideEffects: func(ctx context.Context, t *testing.T, env map[string]string) {
+				funcs := []func() error{
+					func() error {
+						return testutils.ContentSameAsFixture(t, env["TMP_TST_FILE_0"],
+							"testdata/fixtures/should_process_serially_on_key")
+					},
+				}
+				waitTillHolds(ctx, t, funcs, 400*time.Millisecond)
+			},
+			expectLogsContain: []string{
+				"routing_key=\"558f74f82570\"",
+			},
+		},
+		{
+			name:        "should route to multiple handlers",
+			config:      "testdata/configs/should_route_to_multiple_targets.toml",
+			extraArgs:   []string{"run"},
+			expectError: true,
+			hyprEvents: []string{
+				"windowtitlev2>>558f74f82570,Mozilla Firefox",
+			},
+			validateSideEffects: func(t *testing.T, env map[string]string) {
+				testutils.AssertFileExists(t, env["TMP_TST_FILE_0"])
+				compareWithFixture(t, env["TMP_TST_FILE_0"],
+					"testdata/fixtures/should_route_to_multiple_targets__0")
+				testutils.AssertFileExists(t, env["TMP_TST_FILE_1"])
+				compareWithFixture(t, env["TMP_TST_FILE_1"],
+					"testdata/fixtures/should_route_to_multiple_targets__1")
+			},
+			waitForSideEffects: func(ctx context.Context, t *testing.T, env map[string]string) {
+				funcs := []func() error{
+					func() error {
+						return testutils.ContentSameAsFixture(t, env["TMP_TST_FILE_0"],
+							"testdata/fixtures/should_route_to_multiple_targets__0")
+					},
+					func() error {
+						return testutils.ContentSameAsFixture(t, env["TMP_TST_FILE_1"],
+							"testdata/fixtures/should_route_to_multiple_targets__1")
+					},
+				}
+				waitTillHolds(ctx, t, funcs, 400*time.Millisecond)
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -240,6 +324,9 @@ func Test__Run_Binary(t *testing.T) {
 						"error message should contain expected substring. Got: %s", string(out))
 				} else {
 					assert.NoError(t, binaryErr, "expected to exit cleanly")
+				}
+				for _, expected := range tt.expectLogsContain {
+					assert.Contains(t, string(out), expected, "combined logs should contain a substring")
 				}
 				if tt.validateSideEffects != nil {
 					tt.validateSideEffects(t, extraEnv)

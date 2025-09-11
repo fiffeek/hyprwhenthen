@@ -70,10 +70,11 @@ type GeneralSection struct {
 }
 
 type Event struct {
-	On      string         `toml:"on"`
-	When    string         `toml:"when"`
-	Then    string         `toml:"then"`
-	Timeout *time.Duration `toml:"timeout"`
+	On         string         `toml:"on"`
+	When       string         `toml:"when"`
+	Then       string         `toml:"then"`
+	Timeout    *time.Duration `toml:"timeout"`
+	RoutingKey *string        `toml:"routing_key"`
 }
 
 func Load(configPath string) (*RawConfig, error) {

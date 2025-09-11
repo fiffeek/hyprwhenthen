@@ -1,0 +1,31 @@
+[general]
+timeout = "1s"
+
+# the following two handlers ensure that events for the same window address
+# land in the same execution worker, hence are processed serially
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Mozilla Firefox"
+then = "echo $REGEX_GROUP_1"
+routing_key = "$REGEX_GROUP_1"
+
+[[handler]]
+on = "activewindowv2"
+when = ".*"
+then = "echo $REGEX_GROUP_0"
+routing_key = "$REGEX_GROUP_0"
+
+# this handler also ensures that all windowtitlev2 events for Google Chrome
+# are executed serially but can result in a hot spot
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Google Chrome"
+then = "echo $REGEX_GROUP_1"
+routing_key = "windowtitlev2"
+
+# skipping the routing_key results in a random execution allocation,
+# hence no hot spot is created but there is no guarantees on the processing order
+[[handler]]
+on = "windowtitlev2"
+when = "(.*),Google Chrome"
+then = "echo $REGEX_GROUP_1"
