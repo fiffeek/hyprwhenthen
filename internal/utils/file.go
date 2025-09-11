@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 )
@@ -35,4 +36,21 @@ func WriteAtomic(filename string, data []byte) error {
 		return fmt.Errorf("failed to rename temp config %s to %s: %w", tmpName, filename, err)
 	}
 	return nil
+}
+
+func Find(root, ext string) ([]string, error) {
+	var files []string
+	err := filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
+		if e != nil {
+			return e
+		}
+		if filepath.Ext(d.Name()) == ext {
+			files = append(files, s)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("cant walk dir: %w", err)
+	}
+	return files, nil
 }
