@@ -1,0 +1,63 @@
+---
+name: Test
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version-file: go.mod
+                  cache: true
+
+            - name: Install dependencies
+              run: go mod download
+
+            - name: Install golangci-lint
+              uses: golangci/golangci-lint-action@v8
+              with:
+                  version: v2.4.0
+                  args: --help
+
+            - name: Install GoReleaser
+              uses: goreleaser/goreleaser-action@v6
+              with:
+                  version: 2.11.2
+                  install-only: true
+
+            - uses: actions/setup-python@v5
+              name: Install python
+              with:
+                  python-version: 3.9
+                  cache: pip
+
+            - run: pip install -r requirements.txt
+              name: Install python dependencies
+
+            - uses: pre-commit/action@v3.0.1
+              name: Run pre-commit
+
+            - name: Format
+              run: |
+                  make fmt
+                  git diff --exit-code || (echo "Code is not formatted, run 'make fmt' locally" && exit 1)
+
+            - name: Lint
+              run: make lint
+
+            - name: Integration tests
+              run: make test/integration
