@@ -28,6 +28,7 @@ Event-driven automation for Hyprland. HyprWhenThen listens to Hyprland events an
       * [Serial Processing](#serial-processing)
    * [Command Line Options](#command-line-options)
       * [Run](#run)
+         * [Processing all events serially](#processing-all-events-serially)
       * [Validate](#validate)
    * [Architecture](#architecture)
       * [Routing and Concurrency](#routing-and-concurrency)
@@ -312,7 +313,7 @@ Usage:
 
 Flags:
   -h, --help          help for run
-      --queue int     Defines the queue size (default 10)
+      --queue int     Events are queued for each worker, this defines the queue size; the dispatcher will wait for a free slot when the worker is running behind (default 10)
       --workers int   Number of background workers (default 2)
 
 Global Flags:
@@ -320,6 +321,11 @@ Global Flags:
       --debug           Enable debug logging
 ```
 <!-- END runhelp -->
+
+#### Processing all events serially
+
+If you want to process all events serially you could either give all of them the same `routing_key` or run
+the binary with `--workers 1`. The latter ensures that only `1` event is processed at any given time.
 
 ### Validate
 <!-- START validatehelp -->

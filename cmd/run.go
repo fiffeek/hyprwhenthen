@@ -35,7 +35,7 @@ func init() {
 		&queueSize,
 		"queue",
 		10,
-		"Defines the queue size",
+		"Events are queued for each worker, this defines the queue size; the dispatcher will wait for a free slot when the worker is running behind",
 	)
 }
 
