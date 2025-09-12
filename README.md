@@ -111,7 +111,7 @@ timeout = "1s"
 [[handler]]
 on = "windowtitlev2"
 when = "(.*),Sign In - Google Account"
-then = "hyprctl dispatch togglefloating address:$REGEX_GROUP_1"
+then = "hyprctl dispatch togglefloating address:0x${REGEX_GROUP_1}"
 
 # Switch to workspace when specific app opens
 [[handler]]
@@ -256,7 +256,7 @@ then = "hyprctl dispatch movetoworkspacesilent 9"
 [[handler]]
 on = "windowtitlev2"
 when = "(.*),.*Mozilla Firefox"
-then = "hyprctl dispatch focuswindow address:$REGEX_GROUP_1"
+then = "hyprctl dispatch focuswindow address:0x${REGEX_GROUP_1}"
 ```
 
 ### Notifications
