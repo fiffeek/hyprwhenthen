@@ -17,6 +17,8 @@ DEV_BINARIES_DIR := "./bin"
 SCRIPT_DIR := "./scripts/"
 GH_MD_TOC_BIN := "gh-md-toc"
 
+.PHONY: install uninstall
+
 release/local: \
 	$(INSTALL_DIR)/.dir.stamp \
 	$(INSTALL_DIR)/.asdf.stamp
@@ -25,7 +27,7 @@ release/local: \
 install:
 	@mkdir -p "$(DESTDIR)"
 	@if [ "$$(uname -m)" = "x86_64" ]; then \
-		cp dist/hyprwhenthen/$(EXECUTABLE_NAME) "$(DESTDIR)/"; \
+		cp dist/hyprwhenthen_linux_amd64_v1/$(EXECUTABLE_NAME) "$(DESTDIR)/"; \
 	elif [ "$$(uname -m)" = "aarch64" ]; then \
 		cp dist/hyprwhenthen_linux_arm64_v8.0/$(EXECUTABLE_NAME) "$(DESTDIR)/"; \
 	elif [ "$$(uname -m)" = "i686" ] || [ "$$(uname -m)" = "i386" ]; then \
