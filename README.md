@@ -1,4 +1,5 @@
-# HyprWhenThen
+<img width="90" style="margin-right:10px" align=left alt="hyprwhenthen logo" src="https://github.com/user-attachments/assets/34b8648e-ee64-4f33-97d1-dbfa19cd8b01" />
+<H1>HyprWhenThen</H1><br>
 
 Event-driven automation for Hyprland. HyprWhenThen listens to Hyprland events and executes actions based on configurable rules, enabling dynamic window management and workspace automation.
 
