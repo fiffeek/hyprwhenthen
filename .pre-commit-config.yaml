@@ -42,6 +42,11 @@ repos:
             stages: [commit-msg]
             entry: npx commitlint --edit
             language: system
+          - id: fmt
+            name: code fmt
+            entry: make fmt
+            language: system
+            files: ^internal.*
           - id: autotoc
             name: generate toc
             entry: make toc/generate
