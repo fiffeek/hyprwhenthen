@@ -42,3 +42,13 @@ repos:
             stages: [commit-msg]
             entry: npx commitlint --edit
             language: system
+          - id: autotoc
+            name: generate toc
+            entry: make toc/generate
+            language: system
+            files: ^README\.md$
+          - id: autohelp
+            name: generate help
+            entry: make help/generate
+            language: system
+            files: ^cmd.*

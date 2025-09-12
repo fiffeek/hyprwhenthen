@@ -36,3 +36,4 @@ venv
 install
 main
 dist
+bin

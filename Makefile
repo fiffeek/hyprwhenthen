@@ -12,6 +12,10 @@ GORELEASER_BIN := goreleaser
 TEST_EXECUTABLE_NAME := ./dist/hwttest
 DESTDIR ?= $(HOME)/.local/bin
 EXECUTABLE_NAME := hyprwhenthen
+GH_MD_TOC_FILE := "https://raw.githubusercontent.com/ekalinin/github-markdown-toc/master/gh-md-toc"
+DEV_BINARIES_DIR := "./bin"
+SCRIPT_DIR := "./scripts/"
+GH_MD_TOC_BIN := "gh-md-toc"
 
 release/local: \
 	$(INSTALL_DIR)/.dir.stamp \
@@ -41,7 +45,16 @@ dev: \
 	$(INSTALL_DIR)/.asdf.stamp \
 	$(INSTALL_DIR)/.venv.stamp \
 	$(INSTALL_DIR)/.npm.stamp \
-	$(INSTALL_DIR)/.precommit.stamp
+	$(INSTALL_DIR)/.precommit.stamp \
+	$(INSTALL_DIR)/.toc.stamp
+
+$(INSTALL_DIR)/.toc.stamp: $(INSTALL_DIR)/.dir.stamp
+	@mkdir -p $(DEV_BINARIES_DIR)
+	@wget -q $(GH_MD_TOC_FILE)
+	@chmod 755 $(GH_MD_TOC_BIN)
+	@mv $(GH_MD_TOC_BIN) $(DEV_BINARIES_DIR)
+	@$(DEV_BINARIES_DIR)/$(GH_MD_TOC_BIN) --help >/dev/null
+	@touch $@
 
 $(INSTALL_DIR)/.dir.stamp:
 	@mkdir -p $(INSTALL_DIR)
@@ -90,3 +103,11 @@ test/integration: build/test
 
 test/integration/regenerate: build/test
 	@HWT_BINARY_PATH=$(TEST_EXECUTABLE_NAME) $(GOLANG_BIN) test -v ./test/... --regenerate
+
+toc/generate: $(INSTALL_DIR)/.toc.stamp
+	@$(SCRIPT_DIR)/autotoc.sh
+
+help/generate: build/test
+	@scripts/autohelp.sh $(TEST_EXECUTABLE_NAME)
+	@scripts/autohelp.sh $(TEST_EXECUTABLE_NAME) run
+	@scripts/autohelp.sh $(TEST_EXECUTABLE_NAME) validate
