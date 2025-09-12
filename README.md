@@ -37,6 +37,8 @@ Event-driven automation for Hyprland. HyprWhenThen listens to Hyprland events an
    * [Requirements](#requirements)
    * [License](#license)
    * [Related Projects](#related-projects)
+      * [Event Automation Tools](#event-automation-tools)
+      * [Advantages of hyprwhenthen](#advantages-of-hyprwhenthen)
 <!--te-->
 
 ## Features
@@ -136,7 +138,7 @@ hyprwhenthen run --debug
 ```toml
 [general]
 timeout = "15s"                      # Global timeout for all handlers
-hot_reload_debounce_timer = "100ms"  # Debounce time for config reloading
+hot_reload_debounce_timer = "100ms"  # Debounce time for config reloading, defaults to 1s
 ```
 
 ### Handlers
@@ -154,19 +156,46 @@ routing_key = "$REGEX_GROUP_1"       # Optional: control execution order
 
 #### Supported Events
 
-HyprWhenThen supports any hyprland event, as it does not parse them in any capacity.
-The only thing required is that the events are of format: `${TYPE}>>${CONTEXT}` (which is
-with accordance to the [spec](https://wiki.hypr.land/IPC/). Anything that the user defines in
-`handler.on` will be matched to `${TYPE}`, and `handler.when` regex is matched with `${CONTEXT}`.
+HyprWhenThen supports **any** Hyprland event without requiring specific parsing logic. Events follow the format `${TYPE}>>${CONTEXT}` as defined in the [Hyprland IPC specification](https://wiki.hypr.land/IPC/).
 
-For instance, if hyprland introduces a new event: `monitordisabled>>NAME,DESCRIPTION`,
-you could capture it with:
+- `handler.on` matches against `${TYPE}` (the event name)
+- `handler.when` regex pattern matches against `${CONTEXT}` (the event data)
+
+**Common Event Types:**
+- `windowtitlev2` - Window title changes
+- `openwindow` - New window opens
+- `closewindow` - Window closes
+- `workspace` - Workspace changes
+- `focusedmon` - Monitor focus changes
+- `activewindow` - Active window changes
+- `fullscreen` - Fullscreen state changes
+- `monitorremoved` / `monitoradded` - Monitor connection changes
+- `createworkspace` / `destroyworkspace` - Workspace lifecycle
+- `moveworkspace` - Workspace moves between monitors
+
+**Examples:**
+
 ```toml
+# Window management
 [[handler]]
-on = "monitordisabled"
-when = "(.*),(.*)" # matches both groups so that any script can use them
-then = "notify-send \"Monitor disabled, name: $REGEX_GROUP_1, desc: $REGEX_GROUP_2\""
+on = "openwindow"
+when = "firefox"
+then = "hyprctl dispatch workspace 2"
+
+# Monitor events
+[[handler]]
+on = "monitoradded"
+when = "(.*)"
+then = "notify-send \"Monitor connected: $REGEX_GROUP_1\""
+
+# Custom events (future-proof)
+[[handler]]
+on = "monitordisabled"  # hypothetical future event
+when = "(.*),(.*)"      # capture name and description
+then = "notify-send \"Monitor disabled: $REGEX_GROUP_1 ($REGEX_GROUP_2)\""
 ```
+
+For a complete list of current events, see the [Hyprland IPC documentation](https://wiki.hypr.land/IPC/).
 
 #### Template Variables
 
@@ -353,6 +382,16 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## Related Projects
 
-- [Pyprland](https://github.com/hyprland-community/pyprland) - Pure hypr IPC Python automation
-- [Shellevents](https://github.com/hyprwm/contrib/tree/main/shellevents) - Invoke shell functions in response to Hyprland socket2 events
-- [hyprevents](https://github.com/vilari-mickopf/hyprevents/tree/master) - Fork of the above
+### Event Automation Tools
+- [**Pyprland**](https://github.com/hyprland-community/pyprland) - Full-featured Python automation framework with plugins for Hyprland window management, scratchpads, and workspace management
+- [**Shellevents**](https://github.com/hyprwm/contrib/tree/main/shellevents) - Lightweight bash script that invokes shell functions in response to Hyprland socket2 events
+- [**hyprevents**](https://github.com/vilari-mickopf/hyprevents) - Enhanced fork of shellevents with additional features and improvements
+- [**hypr-eventsockets**](https://github.com/hyprwm/contrib/tree/main/hypr-eventsockets) - Collection of event-driven scripts for Hyprland automation
+
+### Advantages of `hyprwhenthen`
+
+- Regex pattern matching: Flexible filtering with capture groups for dynamic actions
+- Concurrent processing: Multi-worker architecture for high-performance automation
+- Minimal dependencies: Single binary with no runtime dependencies
+- Events processing ordering: You can define ordering dependencies
+- Run any script: It is up to the user what to run, can be any script, the event context can be automatically captured
