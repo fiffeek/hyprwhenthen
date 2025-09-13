@@ -3,10 +3,21 @@
 
 Event-driven automation for Hyprland. HyprWhenThen listens to Hyprland events and executes actions based on configurable rules, enabling dynamic window management and workspace automation.
 
+## Demo
+
+https://github.com/user-attachments/assets/528588b2-0cd1-40c3-bb21-14a67c58da5d
+
+This demo showcases `HyprWhenThen`'s core capabilities:
+- **React to any Hyprland event**, silly examples:
+  - Real-time notifications when applications change fullscreen status
+  - Window tracking with instant alerts on window opening
+- **Live configuration reloading** without service restart
+
 ## Documentation
 
 <!--ts-->
 * [HyprWhenThen](#hyprwhenthen)
+   * [Demo](#demo)
    * [Documentation](#documentation)
    * [Features](#features)
    * [Installation](#installation)
