@@ -266,7 +266,7 @@ then = "hyprctl dispatch focuswindow address:0x${REGEX_GROUP_1}"
 [[handler]]
 on = "openwindow"
 when = "(.*)"
-then = "notify-send 'App opened' '$REGEX_GROUP_1'"
+then = "notify-send 'App opened' \"$REGEX_GROUP_1\""
 ```
 
 ### Serial Processing
@@ -276,7 +276,7 @@ then = "notify-send 'App opened' '$REGEX_GROUP_1'"
 [[handler]]
 on = "windowtitlev2"
 when = "(.*),.*"
-then = "echo 'Processing window $REGEX_GROUP_1' >> /tmp/window.log"
+then = "echo \"Processing window $REGEX_GROUP_1\" >> /tmp/window.log"
 routing_key = "$REGEX_GROUP_1"
 ```
 
