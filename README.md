@@ -404,7 +404,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 - [**Pyprland**](https://github.com/hyprland-community/pyprland) - Full-featured Python automation framework with plugins for Hyprland window management, scratchpads, and workspace management
 - [**Shellevents**](https://github.com/hyprwm/contrib/tree/main/shellevents) - Lightweight bash script that invokes shell functions in response to Hyprland socket2 events
 - [**hyprevents**](https://github.com/vilari-mickopf/hyprevents) - Enhanced fork of shellevents with additional features and improvements
-- [**hypr-eventsockets**](https://github.com/hyprwm/contrib/tree/main/hypr-eventsockets) - Collection of event-driven scripts for Hyprland automation
 
 ### Advantages of `hyprwhenthen`
 
