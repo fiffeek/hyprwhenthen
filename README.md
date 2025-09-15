@@ -27,6 +27,7 @@ This demo showcases `HyprWhenThen`'s core capabilities:
    * [Quick start](#quick-start)
       * [Basic Configuration](#basic-configuration)
       * [Run service](#run-service)
+      * [Run under Hyprland](#run-under-hyprland)
    * [Configuration](#configuration)
       * [General Section](#general-section)
       * [Handlers](#handlers)
@@ -42,6 +43,10 @@ This demo showcases `HyprWhenThen`'s core capabilities:
       * [Run](#run)
          * [Processing all events serially](#processing-all-events-serially)
       * [Validate](#validate)
+   * [Running with systemd](#running-with-systemd)
+      * [Hyprland under systemd](#hyprland-under-systemd)
+      * [Run on boot with automatic restarts](#run-on-boot-with-automatic-restarts)
+      * [Custom systemd target](#custom-systemd-target)
    * [Architecture](#architecture)
       * [Routing and Concurrency](#routing-and-concurrency)
    * [Development](#development)
@@ -143,6 +148,15 @@ hyprwhenthen validate
 # Run with debug logging
 hyprwhenthen run --debug
 ```
+
+### Run under Hyprland
+You can run it directly by editing `~/.config/hypr/hyprland.conf`:
+
+```conf
+exec-once = hyprwhenthen run
+```
+
+For a more sophisticated setup, see [`Running with systemd`](#running-with-systemd).
 
 ## Configuration
 
@@ -356,6 +370,95 @@ Global Flags:
 ```
 <!-- END validatehelp -->
 
+## Running with systemd
+
+For production use, it's recommended to run HyprWhenThen as a systemd user service. This ensures automatic restart on failures and proper integration with session management.
+
+**Important**: Ensure you're properly [pushing environment variables to systemd](https://wiki.hypr.land/Nix/Hyprland-on-Home-Manager/#programs-dont-work-in-systemd-services-but-do-on-the-terminal).
+
+### Hyprland under systemd
+If you run [Hyprland under systemd](https://wiki.hypr.land/Useful-Utilities/Systemd-start/), setup is straightforward.
+Create `~/.config/systemd/user/hyprwhenthen.service`:
+
+```ini
+[Unit]
+Description=HyprWhenThen - React to hypr events
+After=graphical-session.target
+Wants=graphical-session.target
+PartOf=hyprland-session.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/hyprwhenthen run
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=hyprland-session.target
+```
+
+
+Enable and start the service:
+```bash
+systemctl --user daemon-reload
+systemctl --user enable hyprwhenthen
+systemctl --user start hyprwhenthen
+```
+
+### Run on boot with automatic restarts
+You can run it on boot and rely on automatic restarts, e.g.:
+```ini
+[Unit]
+Description=HyprWhenThen - React to hypr events
+After=default.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/hyprwhenthen run
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
+```
+The service will restart until Hyprland is ready and environment variables are properly propagated.
+
+### Custom systemd target
+You can also add a custom systemd target that will be started by Hyprland (see [this example](https://github.com/fiffeek/.dotfiles.v2/commit/2a0d400b81031e3786a2779c36f70c9771aee884)), e.g., start a custom graphical-session target in your hyprland config:
+```
+exec-once = systemctl --user start hyprland-custom-session.target
+```
+
+Then:
+```bash
+❯ cat ~/.config/systemd/user/hyprland-custom-session.target
+[Unit]
+Description=A target for other services when hyprland becomes ready
+After=graphical-session-pre.target
+Wants=graphical-session-pre.target
+BindsTo=graphical-session.target
+```
+
+And:
+```bash
+❯ cat ~/.config/systemd/user/hyprwhenthen.service
+[Unit]
+Description=Run hyprwhenthen daemon
+After=hyprland-custom-session.target
+PartOf=hyprland-custom-session.target
+StartLimitBurst=60
+StartLimitIntervalSec=5
+
+[Service]
+Type=exec
+ExecStart=/home/fmikina/.bin/hyprwhenthen run
+Restart=on-failure
+RestartSec=5
+
+
+[Install]
+WantedBy=hyprland-custom-session.target
+```
 
 ## Architecture
 
