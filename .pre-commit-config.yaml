@@ -10,6 +10,7 @@ repos:
           - id: pretty-format-json
             args:
                 - --autofix
+            files: ^(?!package-lock\.json$).*\.json$
     - repo: https://github.com/ComPWA/taplo-pre-commit
       rev: v0.9.3
       hooks:
