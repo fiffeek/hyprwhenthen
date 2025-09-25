@@ -10,9 +10,12 @@ builds:
       goos:
           - linux
       main: ./main.go
-      ldflags: -s -w -X main.Version={{ .Version }} -X main.Commit={{ .ShortCommit }} -X main.BuildDate={{ .Date }}
+      ldflags: |
+          -s -w
+          -X github.com/fiffeek/hyprwhenthen/cmd.Version={{ .Version }}
+          -X github.com/fiffeek/hyprwhenthen/cmd.Commit={{ .ShortCommit }}
+          -X github.com/fiffeek/hyprwhenthen/cmd.BuildDate={{ .Date }}
       binary: hyprwhenthen
-
 archives:
     - formats: [tar.gz]
     # this name template makes the OS and Arch compatible with the results of `uname`.
