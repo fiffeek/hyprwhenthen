@@ -57,10 +57,10 @@ func (c *Config) Reload() error {
 }
 
 type RawConfig struct {
-	Dir       string              `toml:",skip"`
+	Dir       string              `toml:"-"`
 	Events    []*Event            `toml:"handler"`
-	OnEvents  map[string][]*Event `toml:",skip"`
-	EventKeys []string            `toml:",skip"`
+	OnEvents  map[string][]*Event `toml:"-"`
+	EventKeys []string            `toml:"-"`
 	General   *GeneralSection     `toml:"general"`
 }
 
